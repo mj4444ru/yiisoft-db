@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Yiisoft\Db\Connection;
 
+use Throwable;
 use Yiisoft\Db\Command\Command;
 use Yiisoft\Db\Exception\Exception;
 use Yiisoft\Db\Exception\InvalidConfigException;
@@ -18,10 +19,10 @@ interface ConnectionInterface
      * @param string|null $sql the SQL statement to be executed
      * @param array $params the parameters to be bound to the SQL statement
      *
-     * @throws Exception
+     * @return Command the DB command
      * @throws InvalidConfigException
      *
-     * @return Command the DB command
+     * @throws Exception
      */
     public function createCommand(?string $sql = null, array $params = []): Command;
 
@@ -70,12 +71,25 @@ interface ConnectionInterface
     public function getTableSchema(string $name, $refresh = false): ?TableSchema;
 
     /**
-     * Whether to enable read/write splitting by using {@see setSlaves()} to read data. Note that if {@see setSlaves()}
-     * is empty, read/write splitting will NOT be enabled no matter what value this property takes.
+     * Establishes a master connection or indicates to a connection that it is a master connection.
+     * True - This is the master connection.
+     * Null - The master connection is not available, trying to get it will throw an exception.
+     * Object - A previously created master connection.
+     * Callback function - A function that creates a master connection.
      *
-     * @param bool $value
+     * @param true|self|callable|null $value
      *
      * @return void
      */
-    public function setEnableSlaves(bool $value): void;
+    public function setMaster($value): void;
+
+    /**
+     * Returns the master connection.
+     * Returns itself if itself is the master connection. If it is impossible to return the master connection, an exception is thrown.
+     *
+     * @return self
+     *
+     * @throws Throwable
+     */
+    public function getMaster(): self;
 }
